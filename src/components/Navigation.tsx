@@ -18,10 +18,9 @@ export function Navigation() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
-      className="fixed top-0 left-0 right-0 z-50 h-nav-height backdrop-blur-sm"
-      style={{ backgroundColor: 'rgb(250 250 250 / 0.01)' }}
+      className="fixed top-0 left-0 right-0 z-50 h-nav-height bg-background/5"
     >
-      <nav className="h-full w-full px-6 md:px-8 flex items-center justify-between">
+      <nav className="h-full w-full px-4 flex items-center justify-between">
         {/* Logo / Name - Left */}
         <Link 
           href="/" 

@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:www.cathydolle.com)"
+      "WebFetch(domain:www.cathydolle.com)",
+      "Bash(npm run dev:*)"
     ]
   }
 }

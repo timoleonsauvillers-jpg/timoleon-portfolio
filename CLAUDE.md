@@ -46,15 +46,48 @@ Four fixed categories defined in `src/types/index.ts`: `motion`, `print`, `ident
 - **Spacing tokens**: `nav-height: 35px`, `footer-height: 30px`
 - **Custom easing**: `ease-smooth` (cubic-bezier 0.4,0,0.2,1), `ease-snap` (cubic-bezier 0.16,1,0.3,1)
 - **Custom font sizes**: `text-nav`, `text-body`, `text-project-title`, `text-project-number`, `text-heading`
-- Max content width: `max-w-[1800px]`
+- Grid/content padding: `px-4` (consistent across nav, grid, footer)
 
 ## Key Patterns
 
 - Path alias: `@/*` maps to `./src/*`
 - Animations: Framer Motion throughout — `motion.*` elements with `initial`/`animate`/`exit` props
-- Layout: Fixed nav + flex main + footer; home page uses `fixed inset-0` positioning with infinite vertical scroll
+- Layout: Fixed nav + fixed footer; pages use `pt-nav-height pb-footer-height`
+- Home page uses `fixed inset-0` positioning with infinite vertical scroll + parallax effect
 - Grids: Work and Shop pages use CSS `columns-*` masonry layout (not CSS Grid)
 - Images: Currently `<img>` tags with Unsplash placeholders; will switch to `next/image` with Sanity/Shopify remote patterns (already configured in `next.config.js`)
+
+## Page-specific Notes
+
+### Home
+- Project list positioned at 2nd quarter (25% from left)
+- Images aligned right with parallax effect
+- Active image: 50vw × 65vh, color
+- Inactive images: 30vw × 40vh, grayscale, opacity-40
+- Infinite scroll loop (3x array)
+- Only featured projects from Home link to project pages
+
+### Work
+- Presentation only — no links on images
+- Users access project pages only through Home
+- Filters: Tout, Motion, Print, Identité, Bac à sable
+- Masonry grid, full width
+
+### Shop
+- Grid aligned top
+- Only prices shown (no titles)
+- Prices gray, black on hover
+- Links to product pages
+
+### About
+- Full-bleed portrait image background
+- Content positioned at 2nd quarter left
+- Single page, no scroll
+
+### Project Pages
+- Only accessible from Home (featured projects)
+- Minimal info: context, role, year, link
+- Gallery images below
 
 ## Environment Variables
 

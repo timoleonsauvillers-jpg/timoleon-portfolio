@@ -4,17 +4,11 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Product } from '@/types';
+import { urlFor } from '@/lib/sanity';
 
 interface ProductClientProps {
   product: Product;
 }
-
-// Placeholder images for product gallery
-const placeholderGallery = [
-  'https://images.unsplash.com/photo-1579762715118-a6f1d4b934f1?w=800&q=80',
-  'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&q=80',
-  'https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?w=800&q=80',
-];
 
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat('fr-FR', {
@@ -27,6 +21,18 @@ const formatPrice = (price: number) => {
 export function ProductClient({ product }: ProductClientProps) {
   const [activeImage, setActiveImage] = useState(0);
   const [isAdding, setIsAdding] = useState(false);
+
+  // Get all image URLs from Sanity
+  const getImageUrls = () => {
+    if (product.images && product.images.length > 0) {
+      return product.images
+        .filter((img) => img?.asset)
+        .map((img) => urlFor(img).width(800).quality(85).url());
+    }
+    return ['https://images.unsplash.com/photo-1579762715118-a6f1d4b934f1?w=800&q=80'];
+  };
+
+  const imageUrls = getImageUrls();
 
   const handleAddToCart = async () => {
     if (!product.available) return;
@@ -54,9 +60,10 @@ export function ProductClient({ product }: ProductClientProps) {
           {/* Main image */}
           <div className="relative aspect-[3/4] max-h-[65vh] overflow-hidden bg-border/10">
             <img
-              src={placeholderGallery[activeImage]}
+              src={imageUrls[activeImage]}
               alt={product.title}
               className="w-full h-full object-cover"
+              style={{ maxWidth: '100%' }}
             />
             
             {!product.available && (
@@ -67,9 +74,9 @@ export function ProductClient({ product }: ProductClientProps) {
           </div>
 
           {/* Thumbnails */}
-          {placeholderGallery.length > 1 && (
+          {imageUrls.length > 1 && (
             <div className="flex gap-2 mt-3">
-              {placeholderGallery.map((img, index) => (
+              {imageUrls.map((url, index) => (
                 <button
                   key={index}
                   onClick={() => setActiveImage(index)}
@@ -80,9 +87,10 @@ export function ProductClient({ product }: ProductClientProps) {
                   `}
                 >
                   <img
-                    src={img}
+                    src={url}
                     alt={`${product.title} - vue ${index + 1}`}
                     className="w-full h-full object-cover"
+                    style={{ maxWidth: '100%' }}
                   />
                 </button>
               ))}

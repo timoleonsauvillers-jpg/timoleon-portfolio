@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Project } from '@/types';
+import { urlFor } from '@/lib/sanity';
 
 interface ProjectClientProps {
   project: Project;
@@ -10,36 +11,52 @@ interface ProjectClientProps {
   nextProject: Project | null;
 }
 
-// Placeholder images for project gallery
-const placeholderGallery = [
-  'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1400&q=80',
-  'https://images.unsplash.com/photo-1633177317976-3f9bc45e1d1d?w=1000&q=80',
-  'https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?w=1000&q=80',
-  'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=1400&q=80',
-  'https://images.unsplash.com/photo-1618172193763-c511deb635ca?w=1000&q=80',
-  'https://images.unsplash.com/photo-1614851099511-773084f6911d?w=1000&q=80',
-];
-
 export function ProjectClient({ project, prevProject, nextProject }: ProjectClientProps) {
+  // Get all images (thumbnail + gallery)
+  const getAllImages = () => {
+    const images = [];
+    
+    if (project.thumbnail?.asset) {
+      images.push(urlFor(project.thumbnail).width(1400).quality(85).url());
+    }
+    
+    if (project.images && project.images.length > 0) {
+      project.images.forEach((img) => {
+        if (img?.asset) {
+          images.push(urlFor(img).width(1400).quality(85).url());
+        }
+      });
+    }
+    
+    // Fallback if no images
+    if (images.length === 0) {
+      images.push('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1400&q=80');
+    }
+    
+    return images;
+  };
+
+  const images = getAllImages();
+
   return (
     <div className="min-h-screen pt-nav-height pb-footer-height">
       <div className="w-full px-6 md:px-8">
         
-        {/* Header Section - No scroll, visible immediately */}
+        {/* Header Section */}
         <motion.header
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
           className="py-8 md:py-12"
         >
-          {/* Context - Main description */}
+          {/* Context */}
           {project.context && (
             <p className="text-body leading-relaxed max-w-xl mb-8">
               {project.context}
             </p>
           )}
 
-          {/* Meta info - Columns like etienne.studio */}
+          {/* Meta info */}
           <div className="flex flex-wrap gap-x-12 gap-y-4 text-nav">
             {project.role && (
               <div>
@@ -69,61 +86,26 @@ export function ProjectClient({ project, prevProject, nextProject }: ProjectClie
           </div>
         </motion.header>
 
-        {/* Gallery - This is where scrolling happens */}
+        {/* Gallery */}
         <motion.section
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
           className="space-y-3"
         >
-          {/* Full width image */}
-          <div className="w-full">
-            <img
-              src={placeholderGallery[0]}
-              alt={`${project.title}`}
-              className="w-full h-auto"
-            />
-          </div>
-
-          {/* Two column */}
-          <div className="grid grid-cols-2 gap-3">
-            <img
-              src={placeholderGallery[1]}
-              alt={`${project.title}`}
-              className="w-full h-auto"
-            />
-            <img
-              src={placeholderGallery[2]}
-              alt={`${project.title}`}
-              className="w-full h-auto"
-            />
-          </div>
-
-          {/* Full width */}
-          <div className="w-full">
-            <img
-              src={placeholderGallery[3]}
-              alt={`${project.title}`}
-              className="w-full h-auto"
-            />
-          </div>
-
-          {/* Two column */}
-          <div className="grid grid-cols-2 gap-3">
-            <img
-              src={placeholderGallery[4]}
-              alt={`${project.title}`}
-              className="w-full h-auto"
-            />
-            <img
-              src={placeholderGallery[5]}
-              alt={`${project.title}`}
-              className="w-full h-auto"
-            />
-          </div>
+          {images.map((imageUrl, index) => (
+            <div key={index} className="w-full">
+              <img
+                src={imageUrl}
+                alt={`${project.title} - ${index + 1}`}
+                className="w-full h-auto"
+                style={{ maxWidth: '100%' }}
+              />
+            </div>
+          ))}
         </motion.section>
 
-        {/* Navigation to next project */}
+        {/* Navigation */}
         <motion.nav
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

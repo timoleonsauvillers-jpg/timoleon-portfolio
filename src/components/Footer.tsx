@@ -16,10 +16,9 @@ export function Footer() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6, delay: 0.3 }}
-      className="fixed bottom-0 left-0 right-0 z-40 h-footer-height backdrop-blur-sm"
-      style={{ backgroundColor: 'rgb(250 250 250 / 0.01)' }}
+      className="fixed bottom-0 left-0 right-0 z-40 h-footer-height bg-background/5"
     >
-      <div className="h-full w-full px-6 md:px-8 flex items-center justify-end">
+      <div className="h-full w-full px-4 flex items-center justify-end">
         <div className="flex items-center gap-2 md:gap-3 text-nav text-muted">
           <a
             href={`mailto:${contactInfo.email}`}

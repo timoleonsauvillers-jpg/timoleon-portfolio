@@ -92,13 +92,14 @@ src/
 
 - [x] Phase 1: Setup projet
 - [x] Phase 2: Composants UI (Nav, Footer, pages)
-- [ ] Phase 3: HOME (scroll infini) - amélioration
-- [ ] Phase 4: WORK (grille masonry) - fait
-- [ ] Phase 5: Pages projet - fait
-- [ ] Phase 6: ABOUT - fait
-- [ ] Phase 7: Sanity CMS
-- [ ] Phase 8: SHOP + Shopify
-- [ ] Phase 9: Polish & déploiement
+- [x] Phase 3: HOME (scroll infini + parallax)
+- [x] Phase 4: WORK (grille masonry, présentation)
+- [x] Phase 5: Pages projet
+- [x] Phase 6: ABOUT
+- [x] Phase 7: SHOP (grille + pages produit)
+- [ ] Phase 8: Sanity CMS
+- [ ] Phase 9: Shopify integration
+- [ ] Phase 10: Polish & déploiement
 
 ## Contact
 

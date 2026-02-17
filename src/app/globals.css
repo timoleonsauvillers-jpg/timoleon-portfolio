@@ -79,13 +79,24 @@ button:focus-visible {
 }
 
 /* Smooth image loading */
-img {
+img, video {
+  max-width: 70%;
+  height: auto;
   opacity: 1;
   transition: opacity 0.4s ease;
 }
 
 img[data-loading="true"] {
   opacity: 0;
+}
+
+/* Transition utilities */
+.ease-in-out {
+  transition-timing-function: cubic-bezier(.4, 0, .2, 1);
+}
+
+.duration-200 {
+  transition-duration: .2s;
 }
 
 /* Hide scrollbar for infinite scroll container while keeping functionality */
