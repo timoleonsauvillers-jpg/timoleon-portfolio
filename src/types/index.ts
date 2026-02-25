@@ -46,11 +46,10 @@ export interface Product {
   compareAtPrice?: number;
   description?: string;
   details?: string;
-  edition?: string; // e.g., "5/20"
+  edition?: string;
   dimensions?: string;
   technique?: string;
   images: SanityImage[];
-  shopifyProductId?: string;
   shopifyVariantId?: string;
   available: boolean;
   order: number;

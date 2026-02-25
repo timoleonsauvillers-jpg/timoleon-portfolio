@@ -79,10 +79,10 @@ export default defineType({
       initialValue: true,
     }),
     defineField({
-      name: 'shopifyProductId',
-      title: 'Shopify Product ID',
+      name: 'shopifyVariantId',
+      title: 'Shopify Variant ID',
       type: 'string',
-      description: 'ID du produit Shopify pour le checkout',
+      description: 'ID de la variante Shopify. Dans Shopify: Produits → ton produit → Variantes → copie l\'ID depuis l\'URL.',
     }),
     defineField({
       name: 'order',

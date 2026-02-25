@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Product } from '@/types';
 import { urlFor } from '@/lib/sanity';
+import { createCheckout } from '@/lib/shopify';
 
 interface ProductClientProps {
   product: Product;
@@ -21,6 +22,7 @@ const formatPrice = (price: number) => {
 export function ProductClient({ product }: ProductClientProps) {
   const [activeImage, setActiveImage] = useState(0);
   const [isAdding, setIsAdding] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Get all image URLs from Sanity
   const getImageUrls = () => {
@@ -37,13 +39,30 @@ export function ProductClient({ product }: ProductClientProps) {
   const handleAddToCart = async () => {
     if (!product.available) return;
     
+    // Check if product has Shopify variant ID
+    if (!product.shopifyVariantId) {
+      setError('Produit non configuré pour la vente');
+      return;
+    }
+    
     setIsAdding(true);
+    setError(null);
     
-    // TODO: Implement Shopify add to cart
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    
-    setIsAdding(false);
-    alert('Produit ajouté au panier');
+    try {
+      const checkout = await createCheckout(product.shopifyVariantId, 1);
+      
+      if (checkout?.webUrl) {
+        // Redirect to Shopify checkout
+        window.location.href = checkout.webUrl;
+      } else {
+        setError('Erreur lors de la création du panier');
+      }
+    } catch (err) {
+      console.error('Checkout error:', err);
+      setError('Erreur lors de la création du panier');
+    } finally {
+      setIsAdding(false);
+    }
   };
 
   return (
@@ -155,23 +174,28 @@ export function ProductClient({ product }: ProductClientProps) {
             )}
           </div>
 
-          {/* Add to cart */}
+          {/* Error message */}
+          {error && (
+            <p className="text-nav text-red-500 mb-4">{error}</p>
+          )}
+
+          {/* Add to cart / Buy button */}
           <button
             onClick={handleAddToCart}
-            disabled={!product.available || isAdding}
+            disabled={!product.available || isAdding || !product.shopifyVariantId}
             className={`
               w-full max-w-xs py-3 text-nav font-normal uppercase tracking-wide
               transition-all duration-300
-              ${product.available 
+              ${product.available && product.shopifyVariantId
                 ? 'bg-foreground text-background hover:opacity-80' 
                 : 'bg-border text-muted cursor-not-allowed'
               }
             `}
           >
             {isAdding 
-              ? 'Ajout...' 
+              ? 'Redirection...' 
               : product.available 
-                ? 'Ajouter au panier' 
+                ? 'Acheter' 
                 : 'Épuisé'
             }
           </button>

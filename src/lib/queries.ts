@@ -80,7 +80,7 @@ export async function getAllProducts(): Promise<Product[]> {
       technique,
       images,
       available,
-      shopifyProductId,
+      shopifyVariantId,
       order
     }
   `);
@@ -100,7 +100,7 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
       technique,
       images,
       available,
-      shopifyProductId,
+      shopifyVariantId,
       order
     }
   `, { slug });
