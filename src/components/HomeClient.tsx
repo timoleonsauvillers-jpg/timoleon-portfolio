@@ -12,18 +12,17 @@ interface HomeClientProps {
 
 export function HomeClient({ projects }: HomeClientProps) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [imageDimensions, setImageDimensions] = useState<Record<number, { width: number; height: number }>>({});
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRefs = useRef<(HTMLDivElement | null)[]>([]);
   const isJumpingRef = useRef(false);
 
-  // Extended array for infinite loop (3x)
+  // 3x for infinite loop
   const extendedProjects = [...projects, ...projects, ...projects];
   const middleStart = projects.length;
 
-  // Format number with leading zero
   const formatNumber = (num: number) => String(num + 1).padStart(2, '0');
 
-  // Get image URL from Sanity or fallback
   const getImageUrl = (project: Project) => {
     if (project.thumbnail?.asset) {
       return urlFor(project.thumbnail).width(1200).quality(85).url();
@@ -31,7 +30,36 @@ export function HomeClient({ projects }: HomeClientProps) {
     return `https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&q=80`;
   };
 
-  // Handle scroll — detect active project + infinite loop
+  // Detect image dimensions
+  useEffect(() => {
+    projects.forEach((project, index) => {
+      const img = new Image();
+      img.onload = () => {
+        setImageDimensions((prev) => ({
+          ...prev,
+          [index]: { width: img.naturalWidth, height: img.naturalHeight },
+        }));
+      };
+      img.src = getImageUrl(project);
+    });
+  }, [projects]);
+
+  // Compute container size preserving original ratio
+  const getContainerStyle = (index: number) => {
+    const dims = imageDimensions[index];
+    if (!dims) return { width: '400px', height: '400px' };
+
+    const isLandscape = dims.width >= dims.height;
+    const ratio = dims.width / dims.height;
+
+    if (isLandscape) {
+      return { height: '300px', width: `${300 * ratio}px` };
+    } else {
+      return { width: '300px', height: `${300 / ratio}px` };
+    }
+  };
+
+  // Detect which image is closest to center + infinite loop
   const handleScroll = useCallback(() => {
     if (!containerRef.current || isJumpingRef.current) return;
 
@@ -40,7 +68,7 @@ export function HomeClient({ projects }: HomeClientProps) {
     const containerHeight = container.clientHeight;
     const scrollCenter = scrollTop + containerHeight / 2;
 
-    // Find which image is closest to center
+    // Find closest image to center
     let closestIndex = 0;
     let closestDistance = Infinity;
 
@@ -48,7 +76,6 @@ export function HomeClient({ projects }: HomeClientProps) {
       if (ref) {
         const elementCenter = ref.offsetTop + ref.clientHeight / 2;
         const distance = Math.abs(scrollCenter - elementCenter);
-        
         if (distance < closestDistance) {
           closestDistance = distance;
           closestIndex = index;
@@ -61,7 +88,7 @@ export function HomeClient({ projects }: HomeClientProps) {
       setActiveIndex(normalizedIndex);
     }
 
-    // Parallax effect
+    // Parallax effect on images
     imageRefs.current.forEach((ref) => {
       if (!ref) return;
       const img = ref.querySelector('img');
@@ -72,29 +99,25 @@ export function HomeClient({ projects }: HomeClientProps) {
       const viewportCenter = containerHeight / 2;
       const offset = (elementCenter - viewportCenter) / containerHeight;
 
-      img.style.transform = `translateY(${offset * -50}px) scale(1.15)`;
+      img.style.transform = `translateY(${offset * -80}px)`;
     });
 
-    // Handle infinite loop - jump when near edges
+    // Infinite loop jump
     const totalHeight = container.scrollHeight;
     const oneSetHeight = totalHeight / 3;
 
-    if (scrollTop < oneSetHeight * 0.5) {
+    if (scrollTop < oneSetHeight * 0.3) {
       isJumpingRef.current = true;
       container.scrollTop = scrollTop + oneSetHeight;
-      requestAnimationFrame(() => {
-        isJumpingRef.current = false;
-      });
-    } else if (scrollTop > oneSetHeight * 1.5) {
+      requestAnimationFrame(() => { isJumpingRef.current = false; });
+    } else if (scrollTop > oneSetHeight * 1.7) {
       isJumpingRef.current = true;
       container.scrollTop = scrollTop - oneSetHeight;
-      requestAnimationFrame(() => {
-        isJumpingRef.current = false;
-      });
+      requestAnimationFrame(() => { isJumpingRef.current = false; });
     }
   }, [activeIndex, projects.length]);
 
-  // Scroll to specific project
+  // Scroll to a specific project
   const scrollToProject = useCallback((index: number) => {
     const targetIndex = middleStart + index;
     const targetElement = imageRefs.current[targetIndex];
@@ -114,7 +137,7 @@ export function HomeClient({ projects }: HomeClientProps) {
     }
   }, [middleStart]);
 
-  // Initialize scroll position to middle set
+  // Initialize scroll to middle set
   useEffect(() => {
     if (containerRef.current) {
       const totalHeight = containerRef.current.scrollHeight;
@@ -123,20 +146,26 @@ export function HomeClient({ projects }: HomeClientProps) {
     }
   }, []);
 
-  // Add scroll listener
+  // Scroll listener
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-
     container.addEventListener('scroll', handleScroll, { passive: true });
     return () => container.removeEventListener('scroll', handleScroll);
   }, [handleScroll]);
 
+  // Forward wheel events from project list to image container
+  const handleListWheel = useCallback((e: React.WheelEvent) => {
+    if (containerRef.current) {
+      containerRef.current.scrollTop += e.deltaY;
+    }
+  }, []);
+
   return (
-    <div className="fixed inset-0 flex">
-      {/* Fixed left side — Project list at 2nd quarter */}
-      <div className="absolute left-[25%] top-0 bottom-0 w-1/4 flex flex-col justify-center z-10 pointer-events-none">
-        <nav className="space-y-1 pointer-events-auto">
+    <div className="fixed inset-0 pt-nav-height pb-footer-height flex">
+      {/* Left side — Project list at 2nd quarter */}
+      <div onWheel={handleListWheel} className="absolute left-0 top-0 bottom-0 w-1/2 flex items-center justify-center z-10">
+        <nav className="absolute left-[50%] space-y-1">
           {projects.map((project, index) => {
             const isActive = index === activeIndex;
 
@@ -178,58 +207,47 @@ export function HomeClient({ projects }: HomeClientProps) {
         </nav>
       </div>
 
-      {/* Right side — Scrollable images with snap */}
+      {/* Right side — Scrollable column of images */}
       <div
         ref={containerRef}
-        className="w-full overflow-y-auto hide-scrollbar"
-        style={{ scrollSnapType: 'y mandatory' }}
+        className="absolute right-0 top-0 bottom-0 w-1/2 overflow-y-auto hide-scrollbar"
       >
-        {extendedProjects.map((project, index) => {
-          const originalIndex = index % projects.length;
-          const isActive = originalIndex === activeIndex;
+        <div className="flex flex-col items-center py-[30vh]">
+          {extendedProjects.map((project, index) => {
+            const originalIndex = index % projects.length;
+            const isActive = originalIndex === activeIndex;
 
-          return (
-            <div
-              key={`${project._id}-${index}`}
-              ref={(el) => { imageRefs.current[index] = el; }}
-              className="h-screen flex items-center justify-center"
-              style={{ scrollSnapAlign: 'center', scrollSnapStop: 'always' }}
-            >
-              <Link
-                href={isActive ? `/project/${project.slug}` : '#'}
-                onClick={(e) => {
-                  if (!isActive) {
-                    e.preventDefault();
-                    scrollToProject(originalIndex);
-                  }
-                }}
-                className={`
-                  relative block overflow-hidden
-                  transition-all duration-200 ease-in-out
-                  ${isActive
-                    ? 'w-[50vw] h-[70vh]'
-                    : 'w-[35vw] h-[45vh] opacity-40'
-                  }
-                `}
+            return (
+              <div
+                key={`${project._id}-${index}`}
+                ref={(el) => { imageRefs.current[index] = el; }}
+                className="flex justify-center"
               >
-                <div
+                <Link
+                  href={isActive ? `/project/${project.slug}` : '#'}
+                  onClick={(e) => {
+                    if (!isActive) {
+                      e.preventDefault();
+                      scrollToProject(originalIndex);
+                    }
+                  }}
                   className={`
-                    relative w-full h-full overflow-hidden
-                    transition-all duration-200 ease-in-out
-                    ${isActive ? '' : 'grayscale'}
+                    block overflow-hidden transition-all duration-300 ease-smooth
+                    ${isActive ? 'opacity-100' : 'opacity-30 grayscale hover:opacity-50'}
                   `}
+                  style={getContainerStyle(originalIndex)}
                 >
                   <img
                     src={getImageUrl(projects[originalIndex])}
                     alt={project.title}
-                    className="w-full h-full object-cover will-change-transform"
-                    style={{ maxWidth: '100%', transform: 'translateY(0) scale(1.15)' }}
+                    className="w-full will-change-transform"
+                    style={{ height: '140%', objectFit: 'cover', marginTop: '-20%' }}
                   />
-                </div>
-              </Link>
-            </div>
-          );
-        })}
+                </Link>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
