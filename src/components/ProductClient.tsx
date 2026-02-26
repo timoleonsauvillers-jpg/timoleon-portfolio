@@ -53,7 +53,7 @@ export function ProductClient({ product }: ProductClientProps) {
       
       if (checkout?.webUrl) {
         // Redirect to Shopify checkout
-        window.location.href = checkout.webUrl;
+        window.open(checkout.webUrl, '_blank');
       } else {
         setError('Erreur lors de la création du panier');
       }
