@@ -80,7 +80,7 @@ button:focus-visible {
 
 /* Smooth image loading */
 img, video {
-  max-width: 70%;
+  max-width: 100%;
   height: auto;
   opacity: 1;
   transition: opacity 0.4s ease;

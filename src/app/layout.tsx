@@ -3,6 +3,7 @@ import { Sora } from 'next/font/google';
 import './globals.css';
 import { Navigation } from '@/components/Navigation';
 import { Footer } from '@/components/Footer';
+import { getAboutContent } from '@/lib/queries';
 
 const sora = Sora({
   subsets: ['latin'],
@@ -33,11 +34,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const about = await getAboutContent();
+
   return (
     <html lang="fr" className={sora.variable}>
       <body className="bg-background text-foreground min-h-screen">
@@ -45,7 +48,11 @@ export default function RootLayout({
         <main>
           {children}
         </main>
-        <Footer />
+        <Footer
+          email={about?.email}
+          phone={about?.phone}
+          instagram={about?.instagram}
+        />
       </body>
     </html>
   );

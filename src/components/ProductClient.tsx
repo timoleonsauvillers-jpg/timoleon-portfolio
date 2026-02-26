@@ -67,34 +67,18 @@ export function ProductClient({ product }: ProductClientProps) {
 
   return (
     <div className="fixed inset-0 pt-nav-height pb-footer-height flex items-center">
-      <div className="w-full h-full px-6 md:px-8 flex">
-        
+      <div className="w-full h-full px-4 flex">
+
         {/* Left - Image */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
-          className="w-1/2 flex flex-col justify-center pr-8"
+          className="w-1/2 flex items-center justify-center pr-8"
         >
-          {/* Main image */}
-          <div className="relative aspect-[3/4] max-h-[65vh] overflow-hidden bg-border/10">
-            <img
-              src={imageUrls[activeImage]}
-              alt={product.title}
-              className="w-full h-full object-cover"
-              style={{ maxWidth: '100%' }}
-            />
-            
-            {!product.available && (
-              <div className="absolute inset-0 bg-background/50 flex items-center justify-center">
-                <span className="text-body font-normal">Épuisé</span>
-              </div>
-            )}
-          </div>
-
-          {/* Thumbnails */}
+          {/* Thumbnails - fixed left, aligned with navbar px-4 */}
           {imageUrls.length > 1 && (
-            <div className="flex gap-2 mt-3">
+            <div className="fixed left-4 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-2">
               {imageUrls.map((url, index) => (
                 <button
                   key={index}
@@ -115,6 +99,21 @@ export function ProductClient({ product }: ProductClientProps) {
               ))}
             </div>
           )}
+
+          {/* Main image */}
+          <div className="relative w-[70%]">
+            <img
+              src={imageUrls[activeImage]}
+              alt={product.title}
+              className="w-full h-auto"
+            />
+
+            {!product.available && (
+              <div className="absolute inset-0 bg-background/50 flex items-center justify-center">
+                <span className="text-body font-normal">Épuisé</span>
+              </div>
+            )}
+          </div>
         </motion.div>
 
         {/* Right - Info */}

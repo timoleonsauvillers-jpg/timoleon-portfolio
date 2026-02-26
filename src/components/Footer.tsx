@@ -2,15 +2,15 @@
 
 import { motion } from 'framer-motion';
 
-// TODO: Replace with actual contact info
-const contactInfo = {
-  email: 'contact@timoleonsauvillers.com',
-  phone: '+33 X XX XX XX XX',
-  instagram: 'https://instagram.com/timoleon.sauvillers',
-  instagramHandle: '@timoleon.sauvillers',
-};
+interface FooterProps {
+  email?: string;
+  phone?: string;
+  instagram?: string;
+}
 
-export function Footer() {
+export function Footer({ email, phone, instagram }: FooterProps) {
+  if (!email && !phone && !instagram) return null;
+
   return (
     <motion.footer
       initial={{ opacity: 0 }}
@@ -20,32 +20,42 @@ export function Footer() {
     >
       <div className="h-full w-full px-4 flex items-center justify-end">
         <div className="flex items-center gap-2 md:gap-3 text-nav text-muted">
-          <a
-            href={`mailto:${contactInfo.email}`}
-            className="hover:text-foreground transition-colors duration-300"
-          >
-            {contactInfo.email}
-          </a>
+          {email && (
+            <a
+              href={`mailto:${email}`}
+              className="hover:text-foreground transition-colors duration-300"
+            >
+              {email}
+            </a>
+          )}
 
-          <span className="hidden md:inline opacity-30">·</span>
+          {email && phone && (
+            <span className="hidden md:inline opacity-30">·</span>
+          )}
 
-          <a
-            href={`tel:${contactInfo.phone.replace(/\s/g, '')}`}
-            className="hidden md:inline hover:text-foreground transition-colors duration-300"
-          >
-            {contactInfo.phone}
-          </a>
+          {phone && (
+            <a
+              href={`tel:${phone.replace(/\s/g, '')}`}
+              className="hidden md:inline hover:text-foreground transition-colors duration-300"
+            >
+              {phone}
+            </a>
+          )}
 
-          <span className="opacity-30">·</span>
+          {(email || phone) && instagram && (
+            <span className="opacity-30">·</span>
+          )}
 
-          <a
-            href={contactInfo.instagram}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-foreground transition-colors duration-300"
-          >
-            Instagram
-          </a>
+          {instagram && (
+            <a
+              href={instagram}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-foreground transition-colors duration-300"
+            >
+              Instagram
+            </a>
+          )}
         </div>
       </div>
     </motion.footer>
