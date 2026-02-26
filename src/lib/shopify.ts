@@ -1,7 +1,7 @@
 const domain = process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN || 'h0yewb-uk.myshopify.com';
 const storefrontAccessToken = process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN || '';
 
-const endpoint = `https://${domain}/api/2024-01/graphql.json`;
+const endpoint = `https://${domain}/api/2024-10/graphql.json`;
 
 interface ShopifyResponse<T> {
   data: T;
@@ -28,16 +28,16 @@ async function shopifyFetch<T>(query: string, variables?: Record<string, unknown
   return json.data;
 }
 
-// Create a checkout with line items
+// Create a cart and return checkout URL
 export async function createCheckout(variantId: string, quantity: number = 1) {
   const query = `
-    mutation checkoutCreate($input: CheckoutCreateInput!) {
-      checkoutCreate(input: $input) {
-        checkout {
+    mutation cartCreate($input: CartInput!) {
+      cartCreate(input: $input) {
+        cart {
           id
-          webUrl
+          checkoutUrl
         }
-        checkoutUserErrors {
+        userErrors {
           code
           field
           message
@@ -48,9 +48,9 @@ export async function createCheckout(variantId: string, quantity: number = 1) {
 
   const variables = {
     input: {
-      lineItems: [
+      lines: [
         {
-          variantId: `gid://shopify/ProductVariant/${variantId}`,
+          merchandiseId: `gid://shopify/ProductVariant/${variantId}`,
           quantity,
         },
       ],
@@ -58,17 +58,20 @@ export async function createCheckout(variantId: string, quantity: number = 1) {
   };
 
   const data = await shopifyFetch<{
-    checkoutCreate: {
-      checkout: { id: string; webUrl: string } | null;
-      checkoutUserErrors: Array<{ code: string; field: string[]; message: string }>;
+    cartCreate: {
+      cart: { id: string; checkoutUrl: string } | null;
+      userErrors: Array<{ code: string; field: string[]; message: string }>;
     };
   }>(query, variables);
 
-  if (data.checkoutCreate.checkoutUserErrors.length > 0) {
-    throw new Error(data.checkoutCreate.checkoutUserErrors[0].message);
+  if (data.cartCreate.userErrors.length > 0) {
+    throw new Error(data.cartCreate.userErrors[0].message);
   }
 
-  return data.checkoutCreate.checkout;
+  const cart = data.cartCreate.cart;
+  if (!cart) return null;
+
+  return { webUrl: cart.checkoutUrl };
 }
 
 // Get product by handle (slug)
