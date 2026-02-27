@@ -114,14 +114,14 @@ export function ProjectClient({ project, prevProject, nextProject }: ProjectClie
         >
           {nextProject ? (
             <Link
-              href={`/project/${nextProject.slug}`}
+              href={`/work/${nextProject.slug}`}
               className="text-nav text-muted hover:text-foreground transition-colors duration-300"
             >
               Projet suivant →
             </Link>
           ) : prevProject ? (
             <Link
-              href={`/project/${prevProject.slug}`}
+              href={`/work/${prevProject.slug}`}
               className="text-nav text-muted hover:text-foreground transition-colors duration-300"
             >
               ← Projet précédent

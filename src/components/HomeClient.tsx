@@ -178,7 +178,7 @@ export function HomeClient({ projects }: HomeClientProps) {
               >
                 {isActive ? (
                   <Link
-                    href={`/project/${project.slug}`}
+                    href={`/work/${project.slug}`}
                     className="group inline-flex items-baseline gap-1 cursor-pointer"
                   >
                     <span className="text-project-number font-normal text-foreground transition-opacity duration-200 ease-in-out group-hover:opacity-50">
@@ -224,7 +224,7 @@ export function HomeClient({ projects }: HomeClientProps) {
                 className="flex justify-center"
               >
                 <Link
-                  href={isActive ? `/project/${project.slug}` : '#'}
+                  href={isActive ? `/work/${project.slug}` : '#'}
                   onClick={(e) => {
                     if (!isActive) {
                       e.preventDefault();
