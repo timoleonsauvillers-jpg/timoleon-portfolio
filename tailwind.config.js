@@ -18,10 +18,13 @@ module.exports = {
       },
       fontSize: {
         'nav': ['0.8125rem', { letterSpacing: '0.01em', lineHeight: '1.5' }],
-        'body': ['0.9375rem', { lineHeight: '1.6' }],
-        'project-title': ['0.8125rem', { letterSpacing: '0.01em', lineHeight: '1.5' }],
-        'project-number': ['0.8125rem', { letterSpacing: '0.01em', lineHeight: '1.5' }],
-        'heading': ['1.75rem', { letterSpacing: '-0.01em', lineHeight: '1.3' }],
+        'body': ['0.75rem', { lineHeight: '1.6' }],
+        'project-title': ['0.75rem', { letterSpacing: '0.01em', lineHeight: '1.5' }],
+        'project-number': ['0.75rem', { letterSpacing: '0.01em', lineHeight: '1.5' }],
+        'heading': ['1.25rem', { letterSpacing: '-0.01em', lineHeight: '1.3' }],
+      },
+      screens: {
+        'md': '768px',
       },
       spacing: {
         'nav-height': '35px',

@@ -29,12 +29,12 @@ export function Navigation() {
           Timoléon Sauvillers
         </Link>
 
-        {/* Nav Links - Center */}
-        <ul className="absolute left-1/2 -translate-x-1/2 flex items-center gap-6 md:gap-10">
+        {/* Nav Links - Left on mobile, Center on desktop */}
+        <ul className="flex items-center gap-6 md:absolute md:left-1/2 md:-translate-x-1/2 md:gap-10">
           {navLinks.map((link) => {
-            const isActive = pathname === link.href || 
+            const isActive = pathname === link.href ||
               (link.href !== '/' && pathname.startsWith(link.href));
-            
+
             return (
               <li key={link.href}>
                 <Link
@@ -52,8 +52,8 @@ export function Navigation() {
           })}
         </ul>
 
-        {/* Empty right side for balance */}
-        <div className="w-[140px]" />
+        {/* Empty right side for balance - desktop only */}
+        <div className="hidden md:block w-[140px]" />
       </nav>
     </motion.header>
   );

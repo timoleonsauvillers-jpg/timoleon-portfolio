@@ -19,11 +19,11 @@ export function AboutClient({ content }: AboutClientProps) {
 
   return (
     <div className="fixed inset-0 pt-nav-height pb-footer-height flex">
-      {/* Spacer - 1st quarter */}
-      <div className="w-1/4" />
+      {/* Spacer - 1st quarter (hidden on mobile) */}
+      <div className="hidden md:block w-1/4" />
 
-      {/* Content - 2nd quarter */}
-      <div className="w-1/4 flex flex-col justify-center">
+      {/* Content - full width on mobile, 2nd quarter on desktop */}
+      <div className="w-full md:w-1/4 flex flex-col justify-center px-4 md:px-0 overflow-y-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -65,7 +65,7 @@ export function AboutClient({ content }: AboutClientProps) {
             )}
           </div>
 
-          {/* Portrait image */}
+          {/* Portrait image - aligned left on mobile */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -75,14 +75,14 @@ export function AboutClient({ content }: AboutClientProps) {
             <img
               src={getPortraitUrl()}
               alt="Portrait"
-              className="w-full aspect-[3/4] object-cover"
+              className="w-full md:w-full max-w-[250px] md:max-w-none aspect-[3/4] object-cover"
             />
           </motion.div>
         </motion.div>
       </div>
 
-      {/* Remaining space */}
-      <div className="w-1/2" />
+      {/* Remaining space (hidden on mobile) */}
+      <div className="hidden md:block w-1/2" />
     </div>
   );
 }

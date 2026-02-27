@@ -23,7 +23,7 @@ export function Footer({ email, phone, instagram }: FooterProps) {
           {email && (
             <a
               href={`mailto:${email}`}
-              className="hover:text-foreground transition-colors duration-300"
+              className="hidden md:inline hover:text-foreground transition-colors duration-300"
             >
               {email}
             </a>
@@ -36,14 +36,14 @@ export function Footer({ email, phone, instagram }: FooterProps) {
           {phone && (
             <a
               href={`tel:${phone.replace(/\s/g, '')}`}
-              className="hidden md:inline hover:text-foreground transition-colors duration-300"
+              className="hover:text-foreground transition-colors duration-300"
             >
               {phone}
             </a>
           )}
 
           {(email || phone) && instagram && (
-            <span className="opacity-30">·</span>
+            <span className="hidden md:inline opacity-30">·</span>
           )}
 
           {instagram && (
@@ -51,7 +51,7 @@ export function Footer({ email, phone, instagram }: FooterProps) {
               href={instagram}
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-foreground transition-colors duration-300"
+              className="hidden md:inline hover:text-foreground transition-colors duration-300"
             >
               Instagram
             </a>

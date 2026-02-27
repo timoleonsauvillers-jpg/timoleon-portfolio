@@ -44,6 +44,15 @@ export function HomeClient({ projects }: HomeClientProps) {
     });
   }, [projects]);
 
+  // Detect mobile viewport
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
   // Compute container size preserving original ratio
   const getContainerStyle = (index: number) => {
     const dims = imageDimensions[index];
@@ -163,8 +172,8 @@ export function HomeClient({ projects }: HomeClientProps) {
 
   return (
     <div className="fixed inset-0 pt-nav-height pb-footer-height flex">
-      {/* Left side — Project list at 2nd quarter */}
-      <div onWheel={handleListWheel} className="absolute left-0 top-0 bottom-0 w-1/2 flex items-center justify-center z-10">
+      {/* Left side — Project list at 2nd quarter (hidden on mobile) */}
+      <div onWheel={handleListWheel} className="hidden md:flex absolute left-0 top-0 bottom-0 w-1/2 items-center justify-center z-10">
         <nav className="absolute left-[50%] space-y-1">
           {projects.map((project, index) => {
             const isActive = index === activeIndex;
@@ -207,10 +216,10 @@ export function HomeClient({ projects }: HomeClientProps) {
         </nav>
       </div>
 
-      {/* Right side — Scrollable column of images */}
+      {/* Right side — Scrollable column of images (full width on mobile) */}
       <div
         ref={containerRef}
-        className="absolute right-0 top-0 bottom-0 w-1/2 overflow-y-auto hide-scrollbar"
+        className="absolute right-0 top-0 bottom-0 w-full md:w-1/2 overflow-y-auto hide-scrollbar"
       >
         <div className="flex flex-col items-center py-[30vh]">
           {extendedProjects.map((project, index) => {
@@ -224,15 +233,15 @@ export function HomeClient({ projects }: HomeClientProps) {
                 className="flex justify-center"
               >
                 <Link
-                  href={isActive ? `/work/${project.slug}` : '#'}
+                  href={`/work/${project.slug}`}
                   onClick={(e) => {
-                    if (!isActive) {
+                    if (!isActive && !isMobile) {
                       e.preventDefault();
                       scrollToProject(originalIndex);
                     }
                   }}
                   className={`
-                    block overflow-hidden transition-all duration-300 ease-smooth
+                    block overflow-hidden transition-all duration-300 ease-smooth max-w-[90vw] md:max-w-none
                     ${isActive ? 'opacity-100' : 'opacity-30 grayscale hover:opacity-50'}
                   `}
                   style={getContainerStyle(originalIndex)}
