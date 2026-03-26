@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { useCart } from '@/context/CartContext';
 
 const navLinks = [
   { href: '/work', label: 'Work' },
@@ -12,6 +13,7 @@ const navLinks = [
 
 export function Navigation() {
   const pathname = usePathname();
+  const { itemCount, openCart } = useCart();
 
   return (
     <motion.header
@@ -52,8 +54,13 @@ export function Navigation() {
           })}
         </ul>
 
-        {/* Empty right side for balance - desktop only */}
-        <div className="hidden md:block w-[140px]" />
+        {/* Cart button - desktop only */}
+        <button
+          onClick={openCart}
+          className="hidden md:block text-nav opacity-50 hover:opacity-100 transition-opacity duration-300 w-[140px] text-right"
+        >
+          Panier{itemCount > 0 && ` (${itemCount})`}
+        </button>
       </nav>
     </motion.header>
   );

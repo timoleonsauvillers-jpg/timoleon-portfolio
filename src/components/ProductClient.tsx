@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Product } from '@/types';
 import { urlFor } from '@/lib/sanity';
+import { useCart } from '@/context/CartContext';
 import { createCheckout } from '@/lib/shopify';
 
 interface ProductClientProps {
@@ -21,8 +22,11 @@ const formatPrice = (price: number) => {
 
 export function ProductClient({ product }: ProductClientProps) {
   const [activeImage, setActiveImage] = useState(0);
-  const [isAdding, setIsAdding] = useState(false);
+  const [added, setAdded] = useState(false);
+  const [isBuying, setIsBuying] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const { addItem } = useCart();
 
   // Get all image URLs from Sanity
   const getImageUrls = () => {
@@ -36,32 +40,65 @@ export function ProductClient({ product }: ProductClientProps) {
 
   const imageUrls = getImageUrls();
 
-  const handleAddToCart = async () => {
+  const getVariantId = (): string | null => {
+    if (product.isClothing && product.sizeVariants) {
+      const variant = product.sizeVariants.find((v) => v.size === selectedSize);
+      return variant?.shopifyVariantId ?? null;
+    }
+    return product.shopifyVariantId ?? null;
+  };
+
+  const canBuy = product.available && (() => {
+    if (product.isClothing) return !!selectedSize;
+    return !!product.shopifyVariantId;
+  })();
+
+  const handleAddToCart = () => {
     if (!product.available) return;
-    
-    // Check if product has Shopify variant ID
-    if (!product.shopifyVariantId) {
-      setError('Produit non configuré pour la vente');
+
+    const variantId = getVariantId();
+
+    if (!variantId) {
+      if (product.isClothing && !selectedSize) {
+        setError('Veuillez choisir une taille');
+      } else {
+        setError('Produit non configuré pour la vente');
+      }
       return;
     }
-    
-    setIsAdding(true);
+
     setError(null);
-    
+    addItem({
+      variantId,
+      productId: product._id,
+      title: product.title,
+      price: product.price,
+      size: selectedSize ?? undefined,
+      imageUrl: imageUrls[0],
+    });
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1500);
+  };
+
+  const handleBuyNow = async () => {
+    if (!product.available) return;
+    const variantId = getVariantId();
+    if (!variantId) {
+      if (product.isClothing && !selectedSize) setError('Veuillez choisir une taille');
+      else setError('Produit non configuré pour la vente');
+      return;
+    }
+    setIsBuying(true);
+    setError(null);
     try {
-      const checkout = await createCheckout(product.shopifyVariantId, 1);
-      
-      if (checkout?.webUrl) {
-        // Redirect to Shopify checkout
-        window.open(checkout.webUrl, '_blank');
-      } else {
-        setError('Erreur lors de la création du panier');
-      }
+      const checkout = await createCheckout([{ variantId, quantity: 1 }]);
+      if (checkout?.webUrl) window.open(checkout.webUrl, '_blank');
+      else setError('Erreur lors de la création du checkout');
     } catch (err) {
-      console.error('Checkout error:', err);
-      setError('Erreur lors de la création du panier');
+      console.error(err);
+      setError('Erreur lors de la création du checkout');
     } finally {
-      setIsAdding(false);
+      setIsBuying(false);
     }
   };
 
@@ -174,31 +211,61 @@ export function ProductClient({ product }: ProductClientProps) {
             )}
           </div>
 
+          {/* Size selector for clothing */}
+          {product.isClothing && product.sizeVariants && product.sizeVariants.length > 0 && (
+            <div className="flex gap-2 mb-6">
+              {product.sizeVariants.map((v) => (
+                <button
+                  key={v.size}
+                  onClick={() => setSelectedSize(v.size)}
+                  className={`px-3 py-1.5 text-nav border transition-colors duration-200 ${
+                    selectedSize === v.size
+                      ? 'border-foreground text-foreground'
+                      : 'border-border text-muted hover:border-foreground hover:text-foreground'
+                  }`}
+                >
+                  {v.size}
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Error message */}
           {error && (
             <p className="text-nav text-red-500 mb-4">{error}</p>
           )}
 
-          {/* Add to cart / Buy button */}
-          <button
-            onClick={handleAddToCart}
-            disabled={!product.available || isAdding || !product.shopifyVariantId}
-            className={`
-              w-full max-w-xs py-3 text-nav font-normal uppercase tracking-wide
-              transition-all duration-300
-              ${product.available && product.shopifyVariantId
-                ? 'bg-foreground text-background hover:opacity-80' 
-                : 'bg-border text-muted cursor-not-allowed'
-              }
-            `}
-          >
-            {isAdding 
-              ? 'Redirection...' 
-              : product.available 
-                ? 'Acheter' 
-                : 'Épuisé'
-            }
-          </button>
+          {/* Buttons */}
+          <div className="flex flex-col gap-2 w-full max-w-xs">
+            <button
+              onClick={handleBuyNow}
+              disabled={!canBuy || isBuying}
+              className={`
+                w-full py-3 text-nav font-normal uppercase tracking-wide
+                transition-all duration-300
+                ${canBuy
+                  ? 'bg-foreground text-background hover:opacity-80'
+                  : 'bg-border text-muted cursor-not-allowed'
+                }
+              `}
+            >
+              {isBuying ? '...' : product.available ? 'Acheter' : 'Épuisé'}
+            </button>
+            <button
+              onClick={handleAddToCart}
+              disabled={!canBuy}
+              className={`
+                w-full py-3 text-nav font-normal uppercase tracking-wide border
+                transition-all duration-300
+                ${canBuy
+                  ? 'border-foreground text-foreground hover:opacity-50'
+                  : 'border-border text-muted cursor-not-allowed'
+                }
+              `}
+            >
+              {added ? 'Ajouté !' : 'Ajouter au panier'}
+            </button>
+          </div>
 
           {/* Shipping */}
           {product.details && (
@@ -313,29 +380,59 @@ export function ProductClient({ product }: ProductClientProps) {
               )}
             </div>
 
+            {/* Size selector for clothing */}
+            {product.isClothing && product.sizeVariants && product.sizeVariants.length > 0 && (
+              <div className="flex gap-2 mb-6">
+                {product.sizeVariants.map((v) => (
+                  <button
+                    key={v.size}
+                    onClick={() => setSelectedSize(v.size)}
+                    className={`px-3 py-1.5 text-nav border transition-colors duration-200 ${
+                      selectedSize === v.size
+                        ? 'border-foreground text-foreground'
+                        : 'border-border text-muted hover:border-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {v.size}
+                  </button>
+                ))}
+              </div>
+            )}
+
             {error && (
               <p className="text-nav text-red-500 mb-4">{error}</p>
             )}
 
-            <button
-              onClick={handleAddToCart}
-              disabled={!product.available || isAdding || !product.shopifyVariantId}
-              className={`
-                w-full py-3 text-nav font-normal uppercase tracking-wide
-                transition-all duration-300
-                ${product.available && product.shopifyVariantId
-                  ? 'bg-foreground text-background hover:opacity-80'
-                  : 'bg-border text-muted cursor-not-allowed'
-                }
-              `}
-            >
-              {isAdding
-                ? 'Redirection...'
-                : product.available
-                  ? 'Acheter'
-                  : 'Épuisé'
-              }
-            </button>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={handleBuyNow}
+                disabled={!canBuy || isBuying}
+                className={`
+                  w-full py-3 text-nav font-normal uppercase tracking-wide
+                  transition-all duration-300
+                  ${canBuy
+                    ? 'bg-foreground text-background hover:opacity-80'
+                    : 'bg-border text-muted cursor-not-allowed'
+                  }
+                `}
+              >
+                {isBuying ? '...' : product.available ? 'Acheter' : 'Épuisé'}
+              </button>
+              <button
+                onClick={handleAddToCart}
+                disabled={!canBuy}
+                className={`
+                  w-full py-3 text-nav font-normal uppercase tracking-wide border
+                  transition-all duration-300
+                  ${canBuy
+                    ? 'border-foreground text-foreground hover:opacity-50'
+                    : 'border-border text-muted cursor-not-allowed'
+                  }
+                `}
+              >
+                {added ? 'Ajouté !' : 'Ajouter au panier'}
+              </button>
+            </div>
 
             {product.details && (
               <p className="text-nav text-muted mt-4">

@@ -6,3 +6,4 @@ export { AboutClient } from './AboutClient';
 export { ProjectClient } from './ProjectClient';
 export { ShopClient } from './ShopClient';
 export { ProductClient } from './ProductClient';
+export { CartDrawer } from './CartDrawer';

@@ -9,8 +9,7 @@ export interface Project {
   role?: string;
   link?: string;
   thumbnail: SanityImage;
-  images: SanityImage[];
-  videos?: SanityVideo[];
+  gallery?: GalleryItem[];
   featured: boolean;
   order: number;
 }
@@ -30,6 +29,7 @@ export interface SanityImage {
 
 export interface SanityVideo {
   _type: 'file';
+  _key: string;
   asset: {
     _ref: string;
     _type: 'reference';
@@ -37,11 +37,21 @@ export interface SanityVideo {
   };
 }
 
+export type GalleryItem =
+  | (SanityImage & { _key: string })
+  | { _type: 'file'; _key: string; asset: { url: string } };
+
 // Shop types
+export interface SizeVariant {
+  size: 'XS' | 'S' | 'M' | 'L' | 'XL';
+  shopifyVariantId: string;
+}
+
 export interface Product {
   _id: string;
   title: string;
   slug: string;
+  category: 'print' | 'fringue' | 'photo';
   price: number;
   compareAtPrice?: number;
   description?: string;
@@ -50,12 +60,23 @@ export interface Product {
   dimensions?: string;
   technique?: string;
   images: SanityImage[];
+  isClothing?: boolean;
+  sizeVariants?: SizeVariant[];
   shopifyVariantId?: string;
   available: boolean;
   order: number;
 }
 
-// Filter categories
+// Shop filter categories
+export const SHOP_CATEGORIES = [
+  { slug: 'print', label: 'Print' },
+  { slug: 'fringue', label: 'Fringue' },
+  { slug: 'photo', label: 'Photo' },
+] as const;
+
+export type ShopCategorySlug = typeof SHOP_CATEGORIES[number]['slug'];
+
+// Work filter categories
 export const CATEGORIES = [
   { slug: 'motion', label: 'Motion' },
   { slug: 'print', label: 'Print' },
@@ -64,6 +85,17 @@ export const CATEGORIES = [
 ] as const;
 
 export type CategorySlug = typeof CATEGORIES[number]['slug'];
+
+// Cart
+export interface CartItem {
+  variantId: string;
+  productId: string;
+  title: string;
+  price: number;
+  size?: string;
+  imageUrl: string;
+  quantity: number;
+}
 
 // About page
 export interface AboutContent {

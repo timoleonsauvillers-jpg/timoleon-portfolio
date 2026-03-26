@@ -28,8 +28,13 @@ async function shopifyFetch<T>(query: string, variables?: Record<string, unknown
   return json.data;
 }
 
+interface CheckoutLineItem {
+  variantId: string;
+  quantity: number;
+}
+
 // Create a cart and return checkout URL
-export async function createCheckout(variantId: string, quantity: number = 1) {
+export async function createCheckout(items: CheckoutLineItem[]): Promise<{ webUrl: string } | null> {
   const query = `
     mutation cartCreate($input: CartInput!) {
       cartCreate(input: $input) {
@@ -48,12 +53,10 @@ export async function createCheckout(variantId: string, quantity: number = 1) {
 
   const variables = {
     input: {
-      lines: [
-        {
-          merchandiseId: `gid://shopify/ProductVariant/${variantId}`,
-          quantity,
-        },
-      ],
+      lines: items.map(({ variantId, quantity }) => ({
+        merchandiseId: `gid://shopify/ProductVariant/${variantId}`,
+        quantity,
+      })),
     },
   };
 

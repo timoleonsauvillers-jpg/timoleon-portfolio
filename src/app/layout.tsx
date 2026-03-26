@@ -3,6 +3,8 @@ import { Sora } from 'next/font/google';
 import './globals.css';
 import { Navigation } from '@/components/Navigation';
 import { Footer } from '@/components/Footer';
+import { CartDrawer } from '@/components/CartDrawer';
+import { CartProvider } from '@/context/CartContext';
 import { getAboutContent } from '@/lib/queries';
 
 const sora = Sora({
@@ -44,15 +46,18 @@ export default async function RootLayout({
   return (
     <html lang="fr" className={sora.variable}>
       <body className="bg-background text-foreground min-h-screen">
-        <Navigation />
-        <main>
-          {children}
-        </main>
-        <Footer
-          email={about?.email}
-          phone={about?.phone}
-          instagram={about?.instagram}
-        />
+        <CartProvider>
+          <Navigation />
+          <CartDrawer />
+          <main>
+            {children}
+          </main>
+          <Footer
+            email={about?.email}
+            phone={about?.phone}
+            instagram={about?.instagram}
+          />
+        </CartProvider>
       </body>
     </html>
   );
