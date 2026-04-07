@@ -51,7 +51,7 @@ export interface Product {
   _id: string;
   title: string;
   slug: string;
-  category: 'print' | 'fringue' | 'photo';
+  category?: ShopCategory;
   price: number;
   compareAtPrice?: number;
   description?: string;
@@ -67,14 +67,13 @@ export interface Product {
   order: number;
 }
 
-// Shop filter categories
-export const SHOP_CATEGORIES = [
-  { slug: 'print', label: 'Print' },
-  { slug: 'fringue', label: 'Fringue' },
-  { slug: 'photo', label: 'Photo' },
-] as const;
-
-export type ShopCategorySlug = typeof SHOP_CATEGORIES[number]['slug'];
+// Shop category (dynamic, from Sanity)
+export interface ShopCategory {
+  _id: string;
+  title: string;
+  slug: string;
+  order: number;
+}
 
 // Work filter categories
 export const CATEGORIES = [

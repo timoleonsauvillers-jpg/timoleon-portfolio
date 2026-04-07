@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Project } from '@/types';
-import { urlFor } from '@/lib/sanity';
+import { urlFor, urlForImage } from '@/lib/sanity';
 
 interface ProjectClientProps {
   project: Project;
@@ -15,31 +15,33 @@ interface ProjectClientProps {
 export function ProjectClient({ project, prevProject, nextProject }: ProjectClientProps) {
   const [activeImage, setActiveImage] = useState(0);
 
-  // Get all images (thumbnail + gallery)
-  const getAllImages = () => {
-    const images = [];
+  // Build media list from thumbnail + gallery
+  const getMediaItems = () => {
+    const items: { type: 'image' | 'video'; url: string; thumbUrl: string }[] = [];
 
-    if (project.thumbnail?.asset) {
-      images.push(urlFor(project.thumbnail).width(1400).quality(85).url());
-    }
-
-    if (project.images && project.images.length > 0) {
-      project.images.forEach((img) => {
-        if (img?.asset) {
-          images.push(urlFor(img).width(1400).quality(85).url());
+    if (project.gallery && project.gallery.length > 0) {
+      project.gallery.forEach((item) => {
+        if (item._type === 'image' && 'asset' in item && item.asset) {
+          const url = urlForImage(item, 1400);
+          const thumbUrl = urlFor(item).width(96).quality(80).url();
+          if (url) items.push({ type: 'image', url, thumbUrl });
+        } else if (item._type === 'file' && 'asset' in item && (item.asset as { url?: string }).url) {
+          const videoUrl = (item.asset as { url: string }).url;
+          items.push({ type: 'video', url: videoUrl, thumbUrl: videoUrl });
         }
       });
     }
 
-    // Fallback if no images
-    if (images.length === 0) {
-      images.push('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1400&q=80');
+    if (items.length === 0) {
+      const fallback = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1400&q=80';
+      items.push({ type: 'image', url: fallback, thumbUrl: fallback });
     }
 
-    return images;
+    return items;
   };
 
-  const images = getAllImages();
+  const mediaItems = getMediaItems();
+  const images = mediaItems.map((m) => m.url);
 
   const scrollToImage = (index: number) => {
     setActiveImage(index);
@@ -81,7 +83,7 @@ export function ProjectClient({ project, prevProject, nextProject }: ProjectClie
       {/* Thumbnails - fixed left, aligned with navbar (hidden on mobile) */}
       {images.length > 1 && (
         <div className="hidden md:flex fixed left-4 top-1/2 -translate-y-1/2 z-10 flex-col gap-2">
-          {images.map((url, index) => (
+          {mediaItems.map((media, index) => (
             <button
               key={index}
               onClick={() => scrollToImage(index)}
@@ -91,11 +93,21 @@ export function ProjectClient({ project, prevProject, nextProject }: ProjectClie
                 ${activeImage === index ? 'opacity-100' : 'opacity-40 hover:opacity-70'}
               `}
             >
-              <img
-                src={url}
-                alt={`${project.title} - vue ${index + 1}`}
-                className="w-full h-full object-cover"
-              />
+              {media.type === 'video' ? (
+                <video
+                  src={media.thumbUrl}
+                  className="w-full h-full object-cover"
+                  preload="metadata"
+                  muted
+                  playsInline
+                />
+              ) : (
+                <img
+                  src={media.thumbUrl}
+                  alt={`${project.title} - vue ${index + 1}`}
+                  className="w-full h-full object-cover"
+                />
+              )}
             </button>
           ))}
         </div>
@@ -152,13 +164,24 @@ export function ProjectClient({ project, prevProject, nextProject }: ProjectClie
           transition={{ duration: 0.6, delay: 0.2 }}
           className="space-y-3"
         >
-          {images.map((imageUrl, index) => (
+          {mediaItems.map((media, index) => (
             <div key={index} id={`project-image-${index}`} className="w-full">
-              <img
-                src={imageUrl}
-                alt={`${project.title} - ${index + 1}`}
-                className="w-full h-auto"
-              />
+              {media.type === 'video' ? (
+                <video
+                  src={media.url}
+                  className="w-full h-auto"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                />
+              ) : (
+                <img
+                  src={media.url}
+                  alt={`${project.title} - ${index + 1}`}
+                  className="w-full h-auto"
+                />
+              )}
             </div>
           ))}
         </motion.section>

@@ -61,11 +61,11 @@ export function WorkClient({ projects }: WorkClientProps) {
         </div>
       </motion.div>
 
-      {/* Masonry Grid - columns for native aspect ratios */}
+      {/* Grid */}
       <div className="w-full px-4 py-4">
         <motion.div
           layout
-          className="columns-2 md:columns-3 lg:columns-4 xl:columns-5 2xl:columns-6 gap-3"
+          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-6 gap-3 items-start"
         >
           <AnimatePresence mode="popLayout">
             {filteredProjects.map((project, index) => (
@@ -76,7 +76,7 @@ export function WorkClient({ projects }: WorkClientProps) {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.3, delay: index * 0.03 }}
-                className="break-inside-avoid mb-3"
+                className="self-start"
               >
                 {/* Image - native aspect ratio */}
                 <div className="relative overflow-hidden bg-border/10">

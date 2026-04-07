@@ -1,5 +1,5 @@
 import { client } from './sanity';
-import { Project, Product, AboutContent } from '@/types';
+import { Project, Product, AboutContent, ShopCategory } from '@/types';
 
 // Projects
 export async function getFeaturedProjects(): Promise<Project[]> {
@@ -14,7 +14,19 @@ export async function getFeaturedProjects(): Promise<Project[]> {
       role,
       link,
       thumbnail,
-      images,
+      "gallery": gallery[]{
+        _type,
+        _key,
+        _type == 'image' => {
+          asset,
+          hotspot,
+          crop,
+          alt
+        },
+        _type == 'file' => {
+          "asset": asset->{url}
+        }
+      },
       featured,
       order
     }
@@ -23,7 +35,7 @@ export async function getFeaturedProjects(): Promise<Project[]> {
 
 export async function getAllProjects(): Promise<Project[]> {
   return client.fetch(`
-    *[_type == "project"] | order(order asc) {
+    *[_type == "project" && featured != true] | order(order asc) {
       _id,
       title,
       "slug": slug.current,
@@ -33,7 +45,19 @@ export async function getAllProjects(): Promise<Project[]> {
       role,
       link,
       thumbnail,
-      images,
+      "gallery": gallery[]{
+        _type,
+        _key,
+        _type == 'image' => {
+          asset,
+          hotspot,
+          crop,
+          alt
+        },
+        _type == 'file' => {
+          "asset": asset->{url}
+        }
+      },
       featured,
       order
     }
@@ -52,7 +76,19 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
       role,
       link,
       thumbnail,
-      images,
+      "gallery": gallery[]{
+        _type,
+        _key,
+        _type == 'image' => {
+          asset,
+          hotspot,
+          crop,
+          alt
+        },
+        _type == 'file' => {
+          "asset": asset->{url}
+        }
+      },
       featured,
       order
     }
@@ -65,6 +101,18 @@ export async function getProjectSlugs(): Promise<string[]> {
   `);
 }
 
+// Shop categories
+export async function getShopCategories(): Promise<ShopCategory[]> {
+  return client.fetch(`
+    *[_type == "shopCategory"] | order(order asc) {
+      _id,
+      title,
+      "slug": slug.current,
+      order
+    }
+  `);
+}
+
 // Products
 export async function getAllProducts(): Promise<Product[]> {
   return client.fetch(`
@@ -72,6 +120,7 @@ export async function getAllProducts(): Promise<Product[]> {
       _id,
       title,
       "slug": slug.current,
+      "category": category->{ _id, title, "slug": slug.current },
       price,
       description,
       details,
@@ -80,6 +129,8 @@ export async function getAllProducts(): Promise<Product[]> {
       technique,
       images,
       available,
+      isClothing,
+      sizeVariants,
       shopifyVariantId,
       order
     }
@@ -92,6 +143,7 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
       _id,
       title,
       "slug": slug.current,
+      "category": category->{ _id, title, "slug": slug.current },
       price,
       description,
       details,
@@ -100,6 +152,8 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
       technique,
       images,
       available,
+      isClothing,
+      sizeVariants,
       shopifyVariantId,
       order
     }

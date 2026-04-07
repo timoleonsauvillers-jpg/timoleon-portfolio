@@ -54,7 +54,9 @@ export async function createCheckout(items: CheckoutLineItem[]): Promise<{ webUr
   const variables = {
     input: {
       lines: items.map(({ variantId, quantity }) => ({
-        merchandiseId: `gid://shopify/ProductVariant/${variantId}`,
+        merchandiseId: variantId.startsWith('gid://')
+          ? variantId
+          : `gid://shopify/ProductVariant/${variantId}`,
         quantity,
       })),
     },

@@ -1,5 +1,5 @@
 import { ShopClient } from '@/components/ShopClient';
-import { getAllProducts } from '@/lib/queries';
+import { getAllProducts, getShopCategories } from '@/lib/queries';
 
 export const revalidate = 60;
 
@@ -9,7 +9,10 @@ export const metadata = {
 };
 
 export default async function ShopPage() {
-  const products = await getAllProducts();
-  
-  return <ShopClient products={products || []} />;
+  const [products, categories] = await Promise.all([
+    getAllProducts(),
+    getShopCategories(),
+  ]);
+
+  return <ShopClient products={products || []} categories={categories || []} />;
 }

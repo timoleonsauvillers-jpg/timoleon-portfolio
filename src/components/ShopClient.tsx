@@ -3,12 +3,13 @@
 import { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { Product, SHOP_CATEGORIES, ShopCategorySlug } from '@/types';
+import { Product, ShopCategory } from '@/types';
 import { urlFor } from '@/lib/sanity';
 import { useCart } from '@/context/CartContext';
 
 interface ShopClientProps {
   products: Product[];
+  categories: ShopCategory[];
 }
 
 const formatPrice = (price: number) => {
@@ -28,8 +29,8 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-export function ShopClient({ products }: ShopClientProps) {
-  const [activeFilter, setActiveFilter] = useState<ShopCategorySlug | 'all'>('all');
+export function ShopClient({ products, categories }: ShopClientProps) {
+  const [activeFilter, setActiveFilter] = useState<string>('all');
   const { addItem } = useCart();
   const [shuffleKey, setShuffleKey] = useState(0);
   const [isShuffled, setIsShuffled] = useState(false);
@@ -44,7 +45,7 @@ export function ShopClient({ products }: ShopClientProps) {
 
   const filtered = useMemo(() => {
     if (activeFilter === 'all') return products;
-    return products.filter((p) => p.category === activeFilter);
+    return products.filter((p) => p.category?.slug === activeFilter);
   }, [products, activeFilter]);
 
   const displayed = useMemo(() => {
@@ -59,7 +60,7 @@ export function ShopClient({ products }: ShopClientProps) {
     setShuffleKey((k) => k + 1);
   }, []);
 
-  const handleFilter = (cat: ShopCategorySlug | 'all') => {
+  const handleFilter = (cat: string) => {
     setActiveFilter(cat);
     setIsShuffled(false);
   };
@@ -95,9 +96,9 @@ export function ShopClient({ products }: ShopClientProps) {
               >
                 Tout
               </button>
-              {SHOP_CATEGORIES.map((cat) => (
+              {categories.map((cat) => (
                 <button
-                  key={cat.slug}
+                  key={cat._id}
                   onClick={() => handleFilter(cat.slug)}
                   className={`transition-colors duration-300 ${
                     activeFilter === cat.slug
@@ -105,7 +106,7 @@ export function ShopClient({ products }: ShopClientProps) {
                       : 'text-muted hover:text-foreground'
                   }`}
                 >
-                  {cat.label}
+                  {cat.title}
                 </button>
               ))}
             </div>

@@ -69,15 +69,20 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
-      name: 'images',
+      name: 'gallery',
       title: 'Galerie',
+      description: 'Images, GIFs et vidéos MP4 — drag & drop pour réordonner',
       type: 'array',
       of: [
         {
           type: 'image',
-          options: {
-            hotspot: true,
-          },
+          title: 'Image / GIF',
+          options: { hotspot: true },
+        },
+        {
+          type: 'file',
+          title: 'Vidéo MP4',
+          options: { accept: 'video/mp4,video/webm' },
         },
       ],
     }),

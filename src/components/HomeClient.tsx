@@ -53,18 +53,18 @@ export function HomeClient({ projects }: HomeClientProps) {
     return () => window.removeEventListener('resize', check);
   }, []);
 
-  // Compute container size preserving original ratio
+  // Two fixed formats based on image orientation
   const getContainerStyle = (index: number) => {
     const dims = imageDimensions[index];
-    if (!dims) return { width: '400px', height: '400px' };
+    if (!dims) return { width: '280px', height: '224px' }; // default until loaded
 
-    const isLandscape = dims.width >= dims.height;
-    const ratio = dims.width / dims.height;
-
+    const isLandscape = dims.width > dims.height;
     if (isLandscape) {
-      return { height: '300px', width: `${300 * ratio}px` };
+      const naturalHeight = 480 * (dims.height / dims.width);
+      return { width: '480px', height: `${Math.round(naturalHeight * 0.8)}px` };
     } else {
-      return { width: '300px', height: `${300 / ratio}px` };
+      const naturalHeight = 280 * (dims.height / dims.width);
+      return { width: '280px', height: `${Math.round(naturalHeight * 0.8)}px` };
     }
   };
 
@@ -108,7 +108,7 @@ export function HomeClient({ projects }: HomeClientProps) {
       const viewportCenter = containerHeight / 2;
       const offset = (elementCenter - viewportCenter) / containerHeight;
 
-      img.style.transform = `translateY(${offset * -80}px)`;
+      img.style.transform = `translateY(calc(-50% + ${offset * -40}px))`;
     });
 
     // Infinite loop jump
@@ -241,16 +241,16 @@ export function HomeClient({ projects }: HomeClientProps) {
                     }
                   }}
                   className={`
-                    block overflow-hidden transition-all duration-300 ease-smooth max-w-[90vw] md:max-w-none
-                    ${isActive ? 'opacity-100' : 'opacity-30 grayscale hover:opacity-50'}
+                    relative block overflow-hidden transition-all duration-300 ease-smooth max-w-[90vw] md:max-w-none
+                    ${isActive ? 'opacity-100' : 'opacity-30 hover:opacity-50'}
                   `}
                   style={getContainerStyle(originalIndex)}
                 >
                   <img
                     src={getImageUrl(projects[originalIndex])}
                     alt={project.title}
-                    className="w-full will-change-transform"
-                    style={{ height: '140%', objectFit: 'cover', marginTop: '-20%' }}
+                    className="absolute w-full h-auto will-change-transform"
+                    style={{ top: '50%' }}
                   />
                 </Link>
               </div>
