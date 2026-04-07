@@ -50,6 +50,19 @@ const nextConfig = {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=()',
           },
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+              "font-src 'self' https://fonts.gstatic.com",
+              "img-src 'self' data: https://cdn.sanity.io https://cdn.shopify.com https://images.unsplash.com",
+              "media-src 'self' https://cdn.sanity.io",
+              "connect-src 'self' https://*.sanity.io https://*.myshopify.com",
+              "frame-ancestors 'none'",
+            ].join('; '),
+          },
         ],
       },
     ];

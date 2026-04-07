@@ -3,8 +3,8 @@ import imageUrlBuilder from '@sanity/image-url';
 import type { SanityImageSource } from '@sanity/image-url/lib/types/types';
 
 export const client = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'oz88eact',
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
+  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
+  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
   useCdn: process.env.NODE_ENV === 'production',
   apiVersion: '2024-01-01',
 });
@@ -25,8 +25,8 @@ export function urlForImage(source: { asset?: { _ref?: string } } | null | undef
     const format = parts[parts.length - 1];
     const dimensions = parts[parts.length - 2];
     const id = parts.slice(1, parts.length - 2).join('-');
-    const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'oz88eact';
-    const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || 'production';
+    const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!;
+    const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET!;
     return `https://cdn.sanity.io/images/${projectId}/${dataset}/${id}-${dimensions}.${format}`;
   }
   return builder.image(source as SanityImageSource).width(width).quality(80).url();
