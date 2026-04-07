@@ -92,7 +92,7 @@ export function ProductClient({ product }: ProductClientProps) {
     setError(null);
     try {
       const checkout = await createCheckout([{ variantId, quantity: 1 }]);
-      if (checkout?.webUrl) window.open(checkout.webUrl, '_blank');
+      if (checkout?.webUrl) window.location.href = checkout.webUrl;
       else setError('Erreur lors de la création du checkout');
     } catch (err) {
       console.error(err);
