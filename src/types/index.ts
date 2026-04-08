@@ -9,6 +9,7 @@ export interface Project {
   role?: string;
   link?: string;
   thumbnail: SanityImage;
+  thumbnailVideo?: { asset: { url: string } };
   gallery?: GalleryItem[];
   featured: boolean;
   order: number;

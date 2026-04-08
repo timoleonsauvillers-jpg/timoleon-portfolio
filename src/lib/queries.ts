@@ -14,6 +14,7 @@ export async function getFeaturedProjects(): Promise<Project[]> {
       role,
       link,
       thumbnail,
+      "thumbnailVideo": thumbnailVideo{ "asset": asset->{url} },
       "gallery": gallery[]{
         _type,
         _key,
@@ -45,6 +46,7 @@ export async function getAllProjects(): Promise<Project[]> {
       role,
       link,
       thumbnail,
+      "thumbnailVideo": thumbnailVideo{ "asset": asset->{url} },
       "gallery": gallery[]{
         _type,
         _key,
@@ -76,6 +78,7 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
       role,
       link,
       thumbnail,
+      "thumbnailVideo": thumbnailVideo{ "asset": asset->{url} },
       "gallery": gallery[]{
         _type,
         _key,

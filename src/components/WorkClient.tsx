@@ -17,7 +17,6 @@ export function WorkClient({ projects }: WorkClientProps) {
     return projects.filter((p) => p.category === activeFilter);
   }, [projects, activeFilter]);
 
-  // Get image URL from Sanity or fallback
   const getImageUrl = (project: Project) => {
     if (project.thumbnail?.asset) {
       return urlFor(project.thumbnail).width(600).quality(80).url();
@@ -78,14 +77,26 @@ export function WorkClient({ projects }: WorkClientProps) {
                 transition={{ duration: 0.3, delay: index * 0.03 }}
                 className="self-start"
               >
-                {/* Image - native aspect ratio */}
+                {/* Thumbnail — video or image */}
                 <div className="relative overflow-hidden bg-border/10">
-                  <img
-                    src={getImageUrl(project)}
-                    alt={project.title}
-                    className="w-full h-auto"
-                    style={{ maxWidth: '100%' }}
-                  />
+                  {project.thumbnailVideo?.asset?.url ? (
+                    <video
+                      src={project.thumbnailVideo.asset.url}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="w-full h-auto"
+                      style={{ maxWidth: '100%' }}
+                    />
+                  ) : (
+                    <img
+                      src={getImageUrl(project)}
+                      alt={project.title}
+                      className="w-full h-auto"
+                      style={{ maxWidth: '100%' }}
+                    />
+                  )}
                 </div>
 
                 {/* Title below image */}
