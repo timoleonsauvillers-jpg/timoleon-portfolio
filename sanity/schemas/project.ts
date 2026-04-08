@@ -69,6 +69,13 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: 'thumbnailVideo',
+      title: 'Vidéo principale (optionnel)',
+      type: 'file',
+      options: { accept: 'video/mp4,video/webm' },
+      description: 'Si définie, remplace l\'image sur /work. Garder l\'image pour le fallback.',
+    }),
+    defineField({
       name: 'gallery',
       title: 'Galerie',
       description: 'Images, GIFs et vidéos MP4 — drag & drop pour réordonner',
