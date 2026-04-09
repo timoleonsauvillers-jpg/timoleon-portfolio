@@ -88,7 +88,7 @@ export function HomeClient({ projects }: HomeClientProps) {
     const landscape = d.width > d.height;
     const ratio = d.height / d.width;
     if (isMobileRef.current) {
-      const w = landscape ? 220 : 160;
+      const w = landscape ? 280 : 200;
       return { width: w, height: Math.round(w * ratio) };
     }
     const w = landscape ? 320 : 200;
@@ -257,9 +257,7 @@ export function HomeClient({ projects }: HomeClientProps) {
       const cx = e.touches[0].clientX;
       const t = Date.now();
       const dt = Math.max(t - pt, 1);
-      const dy = py - cy;
-      const dx = px - cx;
-      const delta = Math.abs(dy) > Math.abs(dx) ? dy : dx;
+      const delta = px - cx;
 
       velocityRef.current = delta * SCROLL_K * (16 / dt);
       spreadRef.current = Math.min(SPREAD_CAP, spreadRef.current + Math.abs(delta * SCROLL_K) * 1.8);
