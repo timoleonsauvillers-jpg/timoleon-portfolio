@@ -35,6 +35,7 @@ export function HomeClient({ projects }: HomeClientProps) {
   const runningRef = useRef(false);
   const activeRef = useRef(0);
   const isMobileRef = useRef(false);
+  const snapAfterMomentumRef = useRef(false);
 
   // Duplicate items so the wheel looks full even with few projects
   const MIN_SLOTS = 8;
@@ -161,6 +162,21 @@ export function HomeClient({ projects }: HomeClientProps) {
     }
   }, [SLOT_COUNT, BASE_ANGLE, N]);
 
+  // ─── Snap to the nearest project slot ───
+  const snapToNearest = useCallback(() => {
+    let bestSlot = 0;
+    let bestDist = Infinity;
+    for (let slot = 0; slot < SLOT_COUNT; slot++) {
+      const slotAngle = wrapAngle(slot * BASE_ANGLE + angleRef.current);
+      if (Math.abs(slotAngle) < bestDist) {
+        bestDist = Math.abs(slotAngle);
+        bestSlot = slot;
+      }
+    }
+    const diff = wrapAngle(-(bestSlot * BASE_ANGLE) - angleRef.current);
+    targetRef.current = angleRef.current + diff;
+  }, [SLOT_COUNT, BASE_ANGLE]);
+
   // ─── Animation tick ───
   const tick = useCallback(() => {
     // Spring toward target when set (used by scrollToProject)
@@ -181,6 +197,12 @@ export function HomeClient({ projects }: HomeClientProps) {
 
     paint();
 
+    // After momentum slows down, snap to nearest project
+    if (snapAfterMomentumRef.current && targetRef.current === null && Math.abs(velocityRef.current) < 0.003) {
+      snapAfterMomentumRef.current = false;
+      snapToNearest();
+    }
+
     const moving =
       Math.abs(velocityRef.current) > 0.00003 ||
       Math.abs(spreadRef.current) > 0.0003 ||
@@ -194,7 +216,7 @@ export function HomeClient({ projects }: HomeClientProps) {
       runningRef.current = false;
       paint();
     }
-  }, [paint]);
+  }, [paint, snapToNearest]);
 
   const kick = useCallback(() => {
     if (!runningRef.current) {
@@ -244,14 +266,23 @@ export function HomeClient({ projects }: HomeClientProps) {
     let lastX = 0, lastY = 0, lastTime = 0;
     let flickVel = 0;
     let isDragging = false;
-    const TOUCH_K = 0.0025;
+    let totalDrag = 0;
+
+    // Exponential curve: slow swipe = tiny move, fast swipe = much bigger
+    const expDelta = (raw: number) => {
+      const sign = Math.sign(raw);
+      const abs = Math.abs(raw);
+      // Base sensitivity low, ramps up exponentially
+      return sign * Math.pow(abs, 1.6) * 0.0003;
+    };
 
     const start = (e: TouchEvent) => {
-      e.preventDefault(); // Block iOS pull-to-refresh & address bar
+      e.preventDefault();
       lastX = e.touches[0].clientX;
       lastY = e.touches[0].clientY;
       lastTime = Date.now();
       flickVel = 0;
+      totalDrag = 0;
       isDragging = true;
       velocityRef.current = 0;
       targetRef.current = null;
@@ -269,30 +300,41 @@ export function HomeClient({ projects }: HomeClientProps) {
       const dy = lastY - cy;
 
       // Use whichever axis has the larger movement
-      const delta = Math.abs(dy) >= Math.abs(dx) ? dy : dx;
+      const rawDelta = Math.abs(dy) >= Math.abs(dx) ? dy : dx;
 
-      // Direct drag: move the wheel proportionally
-      angleRef.current += delta * TOUCH_K;
+      // Apply exponential curve
+      const delta = expDelta(rawDelta);
+
+      angleRef.current += delta;
+      totalDrag += delta;
 
       // Track velocity for flick release (smooth it to avoid jitter)
-      const instantVel = (delta * TOUCH_K) / (dt / 16);
+      const instantVel = delta / (dt / 16);
       flickVel = flickVel * 0.5 + instantVel * 0.5;
 
-      spreadRef.current = Math.min(SPREAD_CAP, spreadRef.current + Math.abs(delta * TOUCH_K) * 1.2);
+      spreadRef.current = Math.min(SPREAD_CAP, spreadRef.current + Math.abs(delta) * 1.2);
       lastX = cx;
       lastY = cy;
       lastTime = t;
 
-      // Paint immediately during drag for responsiveness
       paint();
     };
 
     const end = () => {
       if (!isDragging) return;
       isDragging = false;
-      // Transfer flick velocity for momentum after release
-      velocityRef.current = flickVel * 0.8;
-      spreadRef.current = Math.min(SPREAD_CAP, spreadRef.current + Math.abs(flickVel) * 2);
+
+      const absFlick = Math.abs(flickVel);
+
+      if (absFlick < 0.008) {
+        // Slow gesture → snap to nearest project
+        snapToNearest();
+      } else {
+        // Fast flick → momentum then snap
+        velocityRef.current = flickVel * 0.8;
+        spreadRef.current = Math.min(SPREAD_CAP, spreadRef.current + absFlick * 2);
+        snapAfterMomentumRef.current = true;
+      }
       kick();
     };
 
