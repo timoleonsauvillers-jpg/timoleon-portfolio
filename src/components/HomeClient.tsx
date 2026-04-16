@@ -244,7 +244,7 @@ export function HomeClient({ projects }: HomeClientProps) {
     let lastX = 0, lastY = 0, lastTime = 0;
     let flickVel = 0;
     let isDragging = false;
-    const TOUCH_K = 0.005;
+    const TOUCH_K = 0.0025;
 
     const start = (e: TouchEvent) => {
       e.preventDefault(); // Block iOS pull-to-refresh & address bar
