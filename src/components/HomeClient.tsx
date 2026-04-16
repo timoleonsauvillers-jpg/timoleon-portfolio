@@ -417,7 +417,7 @@ export function HomeClient({ projects }: HomeClientProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
-            className="md:hidden absolute top-2/3 left-0 right-0 text-center pointer-events-none"
+            className="md:hidden absolute bottom-[20%] left-0 right-0 text-center pointer-events-none z-[200]"
           >
             <Link
               href={`/work/${projects[activeIndex].slug}`}
