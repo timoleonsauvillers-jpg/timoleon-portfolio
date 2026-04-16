@@ -48,7 +48,7 @@ export function HomeClient({ projects }: HomeClientProps) {
   const SPREAD_CAP = 0.3;
   const SPREAD_DECAY = 0.92;
   const VEL_DECAY = 0.94;
-  const SPRING_K = 0.12;
+  const SPRING_K = 0.06;
   const PARALLAX_MAX = 15;
   const OP_MIN = 0.6;
 
