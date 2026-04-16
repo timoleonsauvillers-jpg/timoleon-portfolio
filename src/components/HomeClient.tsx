@@ -237,76 +237,43 @@ export function HomeClient({ projects }: HomeClientProps) {
     return () => el.removeEventListener('wheel', handler);
   }, [kick]);
 
-  // ─── Touch input (drag + flick with momentum) ───
+  // ─── Touch input (same physics as wheel/trackpad) ───
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-    let lastX = 0, lastY = 0, lastTime = 0;
-    let flickVel = 0;
-    let isDragging = false;
-    const TOUCH_K = 0.0025;
+    let lastX = 0, lastY = 0;
 
     const start = (e: TouchEvent) => {
-      e.preventDefault(); // Block iOS pull-to-refresh & address bar
       lastX = e.touches[0].clientX;
       lastY = e.touches[0].clientY;
-      lastTime = Date.now();
-      flickVel = 0;
-      isDragging = true;
-      velocityRef.current = 0;
       targetRef.current = null;
     };
 
     const move = (e: TouchEvent) => {
-      if (!isDragging) return;
       e.preventDefault();
       const cx = e.touches[0].clientX;
       const cy = e.touches[0].clientY;
-      const t = Date.now();
-      const dt = Math.max(t - lastTime, 1);
 
       const dx = lastX - cx;
       const dy = lastY - cy;
 
-      // Use whichever axis has the larger movement
-      const delta = Math.abs(dy) >= Math.abs(dx) ? dy : dx;
+      // Use whichever axis has the larger movement, feed into velocity like wheel does
+      const d = Math.abs(dy) >= Math.abs(dx) ? dy : dx;
+      velocityRef.current += d * SCROLL_K;
+      spreadRef.current = Math.min(SPREAD_CAP, spreadRef.current + Math.abs(d * SCROLL_K) * 1.8);
+      kick();
 
-      // Direct drag: move the wheel proportionally
-      angleRef.current += delta * TOUCH_K;
-
-      // Track velocity for flick release (smooth it to avoid jitter)
-      const instantVel = (delta * TOUCH_K) / (dt / 16);
-      flickVel = flickVel * 0.5 + instantVel * 0.5;
-
-      spreadRef.current = Math.min(SPREAD_CAP, spreadRef.current + Math.abs(delta * TOUCH_K) * 1.2);
       lastX = cx;
       lastY = cy;
-      lastTime = t;
-
-      // Paint immediately during drag for responsiveness
-      paint();
     };
 
-    const end = () => {
-      if (!isDragging) return;
-      isDragging = false;
-      // Transfer flick velocity for momentum after release
-      velocityRef.current = flickVel * 0.8;
-      spreadRef.current = Math.min(SPREAD_CAP, spreadRef.current + Math.abs(flickVel) * 2);
-      kick();
-    };
-
-    el.addEventListener('touchstart', start, { passive: false });
+    el.addEventListener('touchstart', start, { passive: true });
     el.addEventListener('touchmove', move, { passive: false });
-    el.addEventListener('touchend', end, { passive: true });
-    el.addEventListener('touchcancel', end, { passive: true });
     return () => {
       el.removeEventListener('touchstart', start);
       el.removeEventListener('touchmove', move);
-      el.removeEventListener('touchend', end);
-      el.removeEventListener('touchcancel', end);
     };
-  }, [kick, paint]);
+  }, [kick]);
 
   // Forward wheel events from the project list panel
   const fwdWheel = useCallback((e: React.WheelEvent) => {
