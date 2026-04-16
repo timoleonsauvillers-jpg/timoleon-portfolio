@@ -241,14 +241,15 @@ export function HomeClient({ projects }: HomeClientProps) {
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-    let lastPos = 0, lastTime = 0;
+    let lastX = 0, lastY = 0, lastTime = 0;
     let flickVel = 0;
     let isDragging = false;
     const TOUCH_K = 0.005;
 
     const start = (e: TouchEvent) => {
-      // Use vertical axis (clientY) on mobile for natural scroll-to-rotate
-      lastPos = isMobileRef.current ? e.touches[0].clientY : e.touches[0].clientX;
+      e.preventDefault(); // Block iOS pull-to-refresh & address bar
+      lastX = e.touches[0].clientX;
+      lastY = e.touches[0].clientY;
       lastTime = Date.now();
       flickVel = 0;
       isDragging = true;
@@ -259,10 +260,16 @@ export function HomeClient({ projects }: HomeClientProps) {
     const move = (e: TouchEvent) => {
       if (!isDragging) return;
       e.preventDefault();
-      const pos = isMobileRef.current ? e.touches[0].clientY : e.touches[0].clientX;
+      const cx = e.touches[0].clientX;
+      const cy = e.touches[0].clientY;
       const t = Date.now();
       const dt = Math.max(t - lastTime, 1);
-      const delta = lastPos - pos;
+
+      const dx = lastX - cx;
+      const dy = lastY - cy;
+
+      // Use whichever axis has the larger movement
+      const delta = Math.abs(dy) >= Math.abs(dx) ? dy : dx;
 
       // Direct drag: move the wheel proportionally
       angleRef.current += delta * TOUCH_K;
@@ -272,7 +279,8 @@ export function HomeClient({ projects }: HomeClientProps) {
       flickVel = flickVel * 0.5 + instantVel * 0.5;
 
       spreadRef.current = Math.min(SPREAD_CAP, spreadRef.current + Math.abs(delta * TOUCH_K) * 1.2);
-      lastPos = pos;
+      lastX = cx;
+      lastY = cy;
       lastTime = t;
 
       // Paint immediately during drag for responsiveness
