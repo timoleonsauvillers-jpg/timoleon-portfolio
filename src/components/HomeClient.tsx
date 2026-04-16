@@ -237,41 +237,68 @@ export function HomeClient({ projects }: HomeClientProps) {
     return () => el.removeEventListener('wheel', handler);
   }, [kick]);
 
-  // ─── Touch input ───
+  // ─── Touch input (drag + flick with momentum) ───
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-    let py = 0, px = 0, pt = 0;
+    let lastPos = 0, lastTime = 0;
+    let flickVel = 0;
+    let isDragging = false;
+    const TOUCH_K = 0.005;
 
     const start = (e: TouchEvent) => {
-      py = e.touches[0].clientY;
-      px = e.touches[0].clientX;
-      pt = Date.now();
+      // Use vertical axis (clientY) on mobile for natural scroll-to-rotate
+      lastPos = isMobileRef.current ? e.touches[0].clientY : e.touches[0].clientX;
+      lastTime = Date.now();
+      flickVel = 0;
+      isDragging = true;
       velocityRef.current = 0;
       targetRef.current = null;
     };
 
     const move = (e: TouchEvent) => {
+      if (!isDragging) return;
       e.preventDefault();
-      const cy = e.touches[0].clientY;
-      const cx = e.touches[0].clientX;
+      const pos = isMobileRef.current ? e.touches[0].clientY : e.touches[0].clientX;
       const t = Date.now();
-      const dt = Math.max(t - pt, 1);
-      const delta = px - cx;
+      const dt = Math.max(t - lastTime, 1);
+      const delta = lastPos - pos;
 
-      velocityRef.current = delta * SCROLL_K * (16 / dt);
-      spreadRef.current = Math.min(SPREAD_CAP, spreadRef.current + Math.abs(delta * SCROLL_K) * 1.8);
-      py = cy; px = cx; pt = t;
+      // Direct drag: move the wheel proportionally
+      angleRef.current += delta * TOUCH_K;
+
+      // Track velocity for flick release (smooth it to avoid jitter)
+      const instantVel = (delta * TOUCH_K) / (dt / 16);
+      flickVel = flickVel * 0.5 + instantVel * 0.5;
+
+      spreadRef.current = Math.min(SPREAD_CAP, spreadRef.current + Math.abs(delta * TOUCH_K) * 1.2);
+      lastPos = pos;
+      lastTime = t;
+
+      // Paint immediately during drag for responsiveness
+      paint();
+    };
+
+    const end = () => {
+      if (!isDragging) return;
+      isDragging = false;
+      // Transfer flick velocity for momentum after release
+      velocityRef.current = flickVel * 0.8;
+      spreadRef.current = Math.min(SPREAD_CAP, spreadRef.current + Math.abs(flickVel) * 2);
       kick();
     };
 
-    el.addEventListener('touchstart', start, { passive: true });
+    el.addEventListener('touchstart', start, { passive: false });
     el.addEventListener('touchmove', move, { passive: false });
+    el.addEventListener('touchend', end, { passive: true });
+    el.addEventListener('touchcancel', end, { passive: true });
     return () => {
       el.removeEventListener('touchstart', start);
       el.removeEventListener('touchmove', move);
+      el.removeEventListener('touchend', end);
+      el.removeEventListener('touchcancel', end);
     };
-  }, [kick]);
+  }, [kick, paint]);
 
   // Forward wheel events from the project list panel
   const fwdWheel = useCallback((e: React.WheelEvent) => {
@@ -294,7 +321,7 @@ export function HomeClient({ projects }: HomeClientProps) {
   }, [paint]);
 
   return (
-    <div className="fixed inset-0 pt-nav-height pb-footer-height flex overflow-hidden">
+    <div className="fixed inset-0 pt-nav-height pb-footer-height flex overflow-hidden" style={{ overscrollBehavior: 'none' }}>
       {/* ── Left: Project list (desktop) ── */}
       <div
         onWheel={fwdWheel}
@@ -345,6 +372,7 @@ export function HomeClient({ projects }: HomeClientProps) {
       <div
         ref={containerRef}
         className="absolute right-0 top-0 bottom-0 w-full md:w-1/2"
+        style={{ touchAction: 'none', overscrollBehavior: 'none', WebkitOverflowScrolling: 'auto' }}
       >
         <div className="relative w-full h-full flex items-center justify-center">
           {Array.from({ length: SLOT_COUNT }, (_, slot) => {
