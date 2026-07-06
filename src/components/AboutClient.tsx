@@ -18,64 +18,67 @@ export function AboutClient({ content }: AboutClientProps) {
   };
 
   return (
-    <div className="fixed inset-0 pt-nav-height pb-footer-height flex">
+    <div className="fixed inset-0 pt-nav-height pb-footer-height flex overflow-hidden">
       {/* Spacer - 1st quarter (hidden on mobile) */}
       <div className="hidden md:block w-1/4" />
 
       {/* Content - full width on mobile, 2nd quarter on desktop */}
-      <div className="w-full md:w-1/4 flex flex-col justify-center px-4 md:px-0 overflow-y-auto">
+      <div className="w-full md:w-1/4 h-full px-4 md:px-0 py-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="space-y-6"
+          className="h-full flex flex-col justify-center gap-6"
         >
-          {/* Bio */}
-          <p className="text-body leading-relaxed text-foreground">
-            {content.bio}
-          </p>
+          {/* Text block - always fully legible, keeps its natural height */}
+          <div className="shrink-0 space-y-6">
+            {/* Bio */}
+            <p className="text-body leading-relaxed text-foreground">
+              {content.bio}
+            </p>
 
-          {/* Contact */}
-          <div className="space-y-1">
-            <a
-              href={`mailto:${content.email}`}
-              className="block text-body text-foreground hover:opacity-50 transition-opacity duration-300"
-            >
-              {content.email}
-            </a>
-
-            {content.phone && (
+            {/* Contact */}
+            <div className="space-y-1">
               <a
-                href={`tel:${content.phone.replace(/\s/g, '')}`}
+                href={`mailto:${content.email}`}
                 className="block text-body text-foreground hover:opacity-50 transition-opacity duration-300"
               >
-                {content.phone}
+                {content.email}
               </a>
-            )}
 
-            {content.instagram && (
-              <a
-                href={content.instagram}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block text-body text-foreground hover:opacity-50 transition-opacity duration-300"
-              >
-                @timoleon.sauvillers
-              </a>
-            )}
+              {content.phone && (
+                <a
+                  href={`tel:${content.phone.replace(/\s/g, '')}`}
+                  className="block text-body text-foreground hover:opacity-50 transition-opacity duration-300"
+                >
+                  {content.phone}
+                </a>
+              )}
+
+              {content.instagram && (
+                <a
+                  href={content.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block text-body text-foreground hover:opacity-50 transition-opacity duration-300"
+                >
+                  @timoleon.sauvillers
+                </a>
+              )}
+            </div>
           </div>
 
-          {/* Portrait image - aligned left on mobile */}
+          {/* Portrait image - fills remaining vertical space, shrinks with screen height */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="pt-4"
+            className="min-h-0 flex-1"
           >
             <img
               src={getPortraitUrl()}
               alt="Portrait"
-              className="w-full md:w-full max-w-[250px] md:max-w-none aspect-[3/4] object-cover"
+              className="h-full w-full max-w-[250px] md:max-w-none object-cover object-top"
             />
           </motion.div>
         </motion.div>
